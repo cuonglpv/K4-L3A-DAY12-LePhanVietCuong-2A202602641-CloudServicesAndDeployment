@@ -1,101 +1,37 @@
-# Thông Tin Deploy — Checkpoint 5
+# Deployment record
 
-> Điền file này sau khi deploy xong. `pytest tests/test_cp5.py` đọc file này
-> để tìm địa chỉ service của bạn và gọi thử.
->
-> **Chỉ ghi TÊN biến môi trường, tuyệt đối không dán giá trị API key vào đây.**
-> Repo này công khai — dán khóa vào là mất khóa.
+- Họ tên: Lê Phan Việt Cường
+- Mã học viên: 2A202602641
+- Nền tảng: local fallback (Docker Compose)
+- Public URL: Local fallback — `http://localhost:18080` (cổng 8000 và 8001
+  đã được dịch vụ khác trên máy sử dụng khi kiểm tra).
 
-## Thông Tin Học Viên
+## Environment variables configured
 
-| Mục | Nội dung |
-|-----|----------|
-| Họ và tên | (điền họ tên) |
-| Mã học viên | (điền mã học viên) |
-| Repo | (điền link repo K4-L3A-DAY12-HoVaTen-MSSV-CloudServicesAndDeployment) |
+`AGENT_API_KEY`, `REDIS_URL`, `RATE_LIMIT_PER_MINUTE`,
+`MONTHLY_BUDGET_USD`, `HISTORY_MAX_MESSAGES`, `HISTORY_TTL_SECONDS`, and
+`LOG_LEVEL` are configured locally. Secret values are not recorded here.
 
-## Service
+## Verification
 
-| Mục | Nội dung |
-|-----|----------|
-| Public URL | https://TODO-thay-bang-url-that.up.railway.app |
-| Platform | Railway / Render / Cloud Run — (điền platform bạn dùng) |
-| Ngày deploy | (điền ngày) |
+The Docker production image built successfully on 2026-09-29. The local
+fallback stack was started with `$env:PORT='18080'; docker compose up -d`; Redis was
+healthy and the agent container was running.
 
-## Biến Môi Trường Đã Set Trên Cloud
+- `GET /health` returned HTTP 200 and `{"status":"ok"}`.
+- `GET /ready` returned HTTP 200 and `{"status":"ready","redis":true}`.
+- `POST /ask` without `X-API-Key` returned HTTP 401.
 
-Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
+## Evidence
 
-| Biến | Đã set | Ghi chú |
-|------|--------|---------|
-| `PORT` | ✅ | platform tự gán |
-| `AGENT_API_KEY` | ✅ | đặt trong dashboard, không nằm trong repo |
-| `REDIS_URL` | ✅ | (điền: Redis add-on của platform / Upstash / ...) |
-| `RATE_LIMIT_PER_MINUTE` | ✅ | 10 |
-| `MONTHLY_BUDGET_USD` | ✅ | 10.0 |
-| `LOG_LEVEL` | ✅ | INFO |
+The following evidence files are included in `screenshots/`:
 
-## Lệnh Kiểm Tra
+- `health.jpg` — liveness response HTTP 200.
+- `ready.jpg` — readiness response HTTP 200 with Redis ready.
+- `ask-401.jpg` — `/ask` without an API key returns HTTP 401.
+- `ask-success.jpg` — `/ask` with an API key returns HTTP 200; the key is
+  loaded through a variable and is not visible in the screenshot.
+- `docker-compose.jpg` — both `agent` and `redis` containers are healthy.
 
-Thay `<URL>` bằng Public URL ở trên:
-
-```bash
-# 1. Liveness — mong đợi 200 {"status":"ok"}
-curl -i <URL>/health
-
-# 2. Readiness — mong đợi 200 {"status":"ready"} (đã nối được Redis)
-curl -i <URL>/ready
-
-# 3. Không có API key — mong đợi 401
-curl -i -X POST <URL>/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question":"Hello"}'
-
-# 4. Có API key — mong đợi 200 kèm câu trả lời
-curl -i -X POST <URL>/ask \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: $AGENT_API_KEY" \
-  -H "X-User-Id: sv-test" \
-  -d '{"question":"Deploy là gì?"}'
-
-# 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
-for i in $(seq 1 15); do
-  curl -s -o /dev/null -w "%{http_code} " -X POST <URL>/ask \
-    -H "Content-Type: application/json" \
-    -H "X-API-Key: $AGENT_API_KEY" \
-    -H "X-User-Id: sv-test" \
-    -d '{"question":"test"}'
-done; echo
-```
-
-## Kết Quả Chạy Thật
-
-Dán output của các lệnh trên vào đây:
-
-```
-(điền output)
-```
-
-## Ảnh Chụp Màn Hình
-
-Đặt ảnh trong thư mục `screenshots/`:
-
-- `screenshots/dashboard.png` — trang quản lý service trên platform
-- `screenshots/health.png` — kết quả gọi `/health` từ trình duyệt hoặc curl
-
----
-
-## Nếu Dùng Phương Án Dự Phòng
-
-Không đăng ký được tài khoản cloud? Vẫn nộp được bài, nhưng CP5 tối đa 60% điểm:
-
-1. Đặt `LOCAL_FALLBACK=true` trong `.env`
-2. Chạy `docker compose up -d` rồi kiểm tra `docker compose ps`
-3. Chụp màn hình vào `screenshots/`
-4. Chạy `pytest tests/test_cp5.py -v` — bộ test sẽ tự chuyển sang kiểm tra
-   `http://localhost:8000`
-5. Ghi rõ lý do không deploy được vào phần dưới đây:
-
-```
-(điền lý do nếu dùng phương án dự phòng, ngược lại xóa mục này)
-```
+Local fallback was selected because no Railway/Render account credentials are
+stored in this repository; this fallback is worth at most 9/15 for CP5.
