@@ -51,6 +51,17 @@ class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
 
 
+@app.get("/")
+def index():
+    """Provide a useful response at the public service URL."""
+    return {
+        "service": SERVICE_NAME,
+        "version": SERVICE_VERSION,
+        "status": "ok",
+        "endpoints": {"health": "/health", "ready": "/ready", "ask": "/ask"},
+    }
+
+
 @app.get("/health")
 def health():
     """Liveness does not depend on Redis or another external service."""

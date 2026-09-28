@@ -1,7 +1,7 @@
-# Phiếu Phản Ánh — K4 Level 3A, Ngày 12
+# Phiếu phản ánh: K4 Level 3A, Ngày 12
 
 > **Bài làm cá nhân.** Trả lời bằng lời của chính bạn, dựa trên những gì bạn
-> quan sát được khi chạy code — không sao chép đáp án của người khác.
+> quan sát được khi chạy code, không sao chép đáp án của người khác.
 >
 > Cách trả lời: ghi câu trả lời ngay bên dưới từng câu hỏi.
 > `grade.py` đếm số câu đã trả lời (15 điểm cho 10 câu).
@@ -10,7 +10,7 @@
 
 ---
 
-### Câu 1 — Fail fast (CP1)
+### Câu 1: Fail fast (CP1)
 
 Trong `Settings`, `agent_api_key` không có giá trị mặc định nên app chết ngay
 khi khởi động nếu thiếu biến môi trường. Hãy mô tả một tình huống cụ thể mà
@@ -23,7 +23,7 @@ việc "chết sớm" này cứu bạn, so với việc để mặc định `"ch
 
 ---
 
-### Câu 2 — Log cho máy đọc (CP1)
+### Câu 2: Log cho máy đọc (CP1)
 
 Chạy service và gọi `/ask` vài lần. Dán một dòng log JSON bạn thu được, rồi
 nêu **hai** việc bạn làm được với dòng log đó mà `print("đã trả lời xong")`
@@ -36,7 +36,7 @@ không làm được.
 
 ---
 
-### Câu 3 — Kích thước image (CP2)
+### Câu 3: Kích thước image (CP2)
 
 Build cả hai phiên bản và ghi lại số đo thật:
 
@@ -48,20 +48,20 @@ docker images | grep agent
 
 | Bản | Dung lượng |
 |-----|-----------|
-| 1 stage (bản đầu) | lớn hơn do chứa cache/pip/venv dùng để build |
-| Multi-stage | chỉ giữ runtime, source và `/opt/venv` cần để chạy |
+| 1 stage (bản thử) | 189.1 MB |
+| Multi-stage | 192.1 MB |
 
 Giải thích: phần dung lượng chênh lệch đó là những gì?
 
-> Khác biệt chính là stage build giữ compiler, cache của pip và file trung
-> gian; stage runtime chỉ copy virtualenv đã hoàn tất cùng `app/` và `utils/`.
-> Vì vậy image chạy ít bề mặt tấn công và ít byte phải tải hơn. Khi nộp lại tôi
-> sẽ dùng `docker images` để ghi số đo đúng của từng máy, vì số MB phụ thuộc
-> cache/base image hiện có.
+> Lần đo này multi-stage lại lớn hơn khoảng 3 MB. Bản một-stage dùng trực tiếp
+> package cài vào Python base image; bản multi-stage có thêm một virtualenv
+> riêng. Vì dependencies của lab đều có wheel và pip dùng `--no-cache-dir`,
+> builder không để lại nhiều file thừa để cắt giảm. Multi-stage vẫn hữu ích khi
+> phải cài compiler hoặc công cụ build, vì những thứ đó không cần ở image chạy.
 
 ---
 
-### Câu 4 — Thứ tự lệnh trong Dockerfile (CP2)
+### Câu 4: Thứ tự lệnh trong Dockerfile (CP2)
 
 Sửa một ký tự trong `app/main.py` rồi build lại. Với Dockerfile của bạn, những
 layer nào được dùng lại từ cache, layer nào phải chạy lại? Nếu bạn đặt
@@ -75,7 +75,7 @@ layer nào được dùng lại từ cache, layer nào phải chạy lại? Nế
 
 ---
 
-### Câu 5 — Vì sao không chạy bằng root (CP2)
+### Câu 5: Vì sao không chạy bằng root (CP2)
 
 Container mặc định chạy bằng root. Mô tả chuỗi sự kiện dẫn từ "một lỗ hổng
 trong code Python của bạn" tới "kẻ tấn công có quyền cao trên máy host", và
@@ -89,7 +89,7 @@ lệnh `USER` cắt đứt chuỗi đó ở chỗ nào.
 
 ---
 
-### Câu 6 — Cửa sổ trượt (CP3)
+### Câu 6: Cửa sổ trượt (CP3)
 
 Rate limit của bạn dùng sliding window 60 giây. Nếu thay bằng cách đếm theo
 phút đồng hồ (reset lúc giây 00), một người dùng có thể gửi tối đa bao nhiêu
@@ -103,7 +103,7 @@ con số đó.
 
 ---
 
-### Câu 7 — Rate limit và cost guard (CP3)
+### Câu 7: Rate limit và cost guard (CP3)
 
 Hai cơ chế này khác nhau ở điểm nào? Cho một tình huống mà rate limit cho qua
 nhưng cost guard phải chặn, và một tình huống ngược lại.
@@ -116,7 +116,7 @@ nhưng cost guard phải chặn, và một tình huống ngược lại.
 
 ---
 
-### Câu 8 — /health khác /ready (CP4)
+### Câu 8: /health khác /ready (CP4)
 
 Nếu gộp hai endpoint làm một và cho nó kiểm tra Redis, chuyện gì xảy ra với cụm
 3 container khi Redis mất kết nối 30 giây? Trả lời theo đúng thứ tự sự kiện.
@@ -129,7 +129,7 @@ Nếu gộp hai endpoint làm một và cho nó kiểm tra Redis, chuyện gì x
 
 ---
 
-### Câu 9 — Stateless (CP4)
+### Câu 9: Stateless (CP4)
 
 Chạy `docker compose up --scale agent=3` rồi gọi `/ask` nhiều lần với cùng một
 `X-User-Id`. Quan sát `history_length` trong response. Nếu lịch sử được lưu
@@ -142,7 +142,7 @@ trong một dict Python thay vì Redis, bạn sẽ thấy con số đó thay đ�
 
 ---
 
-### Câu 10 — Deploy thật (CP5)
+### Câu 10: Deploy thật (CP5)
 
 Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health check
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
