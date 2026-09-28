@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run checkpoint tests
-        run: pytest tests --ignore=tests/test_cp5.py -m "not docker"
+        run: pytest tests/test_cp1.py tests/test_cp2.py tests/test_cp3.py tests/test_cp4.py -m "not docker"
 
   build:
     needs: test
