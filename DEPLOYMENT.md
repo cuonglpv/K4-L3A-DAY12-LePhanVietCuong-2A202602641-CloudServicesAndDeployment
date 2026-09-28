@@ -9,8 +9,8 @@
 ## Environment variables configured
 
 `AGENT_API_KEY`, `REDIS_URL`, `RATE_LIMIT_PER_MINUTE`,
-`MONTHLY_BUDGET_USD`, `HISTORY_MAX_MESSAGES`, `HISTORY_TTL_SECONDS`, and
-`LOG_LEVEL` are configured locally. Secret values are not recorded here.
+`MONTHLY_BUDGET_USD`, and `LOG_LEVEL` are configured locally. Secret values
+are not recorded here.
 
 ## Verification
 
