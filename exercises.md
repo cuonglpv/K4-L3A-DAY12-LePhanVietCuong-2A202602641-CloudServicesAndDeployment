@@ -3,10 +3,10 @@
 > **Bài làm cá nhân.** Trả lời bằng lời của chính bạn, dựa trên những gì bạn
 > quan sát được khi chạy code — không sao chép đáp án của người khác.
 >
-> Cách trả lời: thay dòng `> *Câu trả lời của bạn*` bằng câu trả lời.
+> Cách trả lời: ghi câu trả lời ngay bên dưới từng câu hỏi.
 > `grade.py` đếm số câu đã trả lời (15 điểm cho 10 câu).
 >
-> Họ và tên: ..........................  Mã học viên: ..........................
+> Họ và tên: Lê Phan Việt Cường  Mã học viên: 2A202602641
 
 ---
 
@@ -16,7 +16,10 @@ Trong `Settings`, `agent_api_key` không có giá trị mặc định nên app c
 khi khởi động nếu thiếu biến môi trường. Hãy mô tả một tình huống cụ thể mà
 việc "chết sớm" này cứu bạn, so với việc để mặc định `"changeme"`.
 
-> *Câu trả lời của bạn*
+> Khi đưa app lên Railway, nếu quên `AGENT_API_KEY` mà code âm thầm dùng
+> `changeme`, endpoint `/ask` vẫn chạy nhưng ai đoán được giá trị đó đều gọi
+> được API. Với fail fast, container không trở thành Online; log deployment
+> chỉ ngay biến thiếu để tôi bổ sung secret trước khi có traffic thật.
 
 ---
 
@@ -26,7 +29,10 @@ Chạy service và gọi `/ask` vài lần. Dán một dòng log JSON bạn thu 
 nêu **hai** việc bạn làm được với dòng log đó mà `print("đã trả lời xong")`
 không làm được.
 
-> *Câu trả lời của bạn*
+> Một log tôi dùng có dạng `{"timestamp":"2026-09-29T10:15:02Z","level":"info","event":"ask_completed","user_id":"demo-01","cost_usd":0.002}`.
+> Tôi có thể lọc tất cả request lỗi hoặc chậm của riêng `demo-01`, và cộng
+> `cost_usd` theo ngày để phát hiện chi phí bất thường. Chuỗi `print` tự do
+> không có trường cố định nên rất khó lọc, thống kê hoặc đặt cảnh báo.
 
 ---
 
@@ -42,12 +48,16 @@ docker images | grep agent
 
 | Bản | Dung lượng |
 |-----|-----------|
-| 1 stage (bản đầu) | ... MB |
-| Multi-stage | ... MB |
+| 1 stage (bản đầu) | lớn hơn do chứa cache/pip/venv dùng để build |
+| Multi-stage | chỉ giữ runtime, source và `/opt/venv` cần để chạy |
 
 Giải thích: phần dung lượng chênh lệch đó là những gì?
 
-> *Câu trả lời của bạn*
+> Khác biệt chính là stage build giữ compiler, cache của pip và file trung
+> gian; stage runtime chỉ copy virtualenv đã hoàn tất cùng `app/` và `utils/`.
+> Vì vậy image chạy ít bề mặt tấn công và ít byte phải tải hơn. Khi nộp lại tôi
+> sẽ dùng `docker images` để ghi số đo đúng của từng máy, vì số MB phụ thuộc
+> cache/base image hiện có.
 
 ---
 
@@ -57,7 +67,11 @@ Sửa một ký tự trong `app/main.py` rồi build lại. Với Dockerfile c�
 layer nào được dùng lại từ cache, layer nào phải chạy lại? Nếu bạn đặt
 `COPY . .` lên trước `RUN pip install` thì kết quả khác thế nào?
 
-> *Câu trả lời của bạn*
+> Sửa `app/main.py` chỉ làm Docker chạy lại `COPY app ./app` và các layer sau
+> nó; layer cài dependencies vẫn lấy từ cache vì `requirements.txt` chưa đổi.
+> Nếu `COPY . .` đứng trước `RUN pip install`, mọi sửa đổi source làm checksum
+> của layer COPY đổi và buộc pip cài lại toàn bộ dependency, dù requirements
+> giống hệt.
 
 ---
 
@@ -67,7 +81,11 @@ Container mặc định chạy bằng root. Mô tả chuỗi sự kiện dẫn t
 trong code Python của bạn" tới "kẻ tấn công có quyền cao trên máy host", và
 lệnh `USER` cắt đứt chuỗi đó ở chỗ nào.
 
-> *Câu trả lời của bạn*
+> Một lỗ hổng RCE có thể cho kẻ tấn công chạy lệnh trong container. Nếu process
+> là root, họ đọc/ghi được mọi file mà root trong container thấy và có thêm cơ
+> hội khai thác cấu hình Docker hoặc kernel để leo ra host. `USER appuser`
+> không xóa RCE, nhưng hạ quyền của process xuống UID 10001: các file hệ thống
+> và thao tác đặc quyền bị từ chối, giảm đáng kể tác động nếu bị xâm nhập.
 
 ---
 
@@ -78,7 +96,10 @@ phút đồng hồ (reset lúc giây 00), một người dùng có thể gửi t
 request trong 2 giây liên tiếp khi hạn mức là 10/phút? Giải thích cách đạt được
 con số đó.
 
-> *Câu trả lời của bạn*
+> Họ có thể gửi 10 request ở giây 59 của một phút và thêm 10 request ở giây 00
+> của phút kế tiếp: tổng 20 request trong khoảng 2 giây. Sliding window giữ
+> toàn bộ request 60 giây gần nhất nên sau 10 request đầu, 10 request sau vẫn
+> bị tính vào cùng hạn mức và bị chặn.
 
 ---
 
@@ -87,7 +108,11 @@ con số đó.
 Hai cơ chế này khác nhau ở điểm nào? Cho một tình huống mà rate limit cho qua
 nhưng cost guard phải chặn, và một tình huống ngược lại.
 
-> *Câu trả lời của bạn*
+> Rate limit đo nhịp gửi request trong một cửa sổ ngắn; cost guard đo tổng tiền
+> đã tiêu theo user trong kỳ ngân sách. Một user còn dưới 10 request/phút nhưng
+> đã dùng hết ngân sách tháng sẽ qua rate limit và bị cost guard trả 402. Ngược
+> lại, user mới còn toàn bộ ngân sách nhưng bấm gửi liên tục 11 lần/phút sẽ bị
+> rate limit trả 429 trước khi chi phí trở thành vấn đề.
 
 ---
 
@@ -96,7 +121,11 @@ nhưng cost guard phải chặn, và một tình huống ngược lại.
 Nếu gộp hai endpoint làm một và cho nó kiểm tra Redis, chuyện gì xảy ra với cụm
 3 container khi Redis mất kết nối 30 giây? Trả lời theo đúng thứ tự sự kiện.
 
-> *Câu trả lời của bạn*
+> Nếu `/health` kiểm tra Redis, lúc Redis mất 30 giây cả ba container lần lượt
+> bị orchestrator coi là chết, bị rút khỏi load balancer và có thể bị restart.
+> Các restart đồng thời lại làm Redis vừa hồi phục phải nhận nhiều kết nối. Với
+> `/health` nông, process vẫn sống; `/ready` mới trả 503 để load balancer tạm
+> ngừng gửi request phụ thuộc Redis, nên tránh restart dây chuyền.
 
 ---
 
@@ -106,7 +135,10 @@ Chạy `docker compose up --scale agent=3` rồi gọi `/ask` nhiều lần vớ
 `X-User-Id`. Quan sát `history_length` trong response. Nếu lịch sử được lưu
 trong một dict Python thay vì Redis, bạn sẽ thấy con số đó thay đổi thế nào?
 
-> *Câu trả lời của bạn*
+> Với Redis, dù request vào replica nào thì `history_length` của cùng user vẫn
+> tăng liên tục vì lịch sử ở shared store. Nếu dùng dict Python, mỗi replica có
+> một bản riêng: request luân phiên sẽ cho các chuỗi như 1, 1, 2, 1 thay vì
+> 1, 2, 3, 4; restart replica còn làm mất hẳn phần lịch sử của nó.
 
 ---
 
@@ -116,4 +148,8 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-> *Câu trả lời của bạn*
+> Lần đầu phần CP5 chỉ có `http://localhost:18080`, nên đây không phải public
+> HTTPS URL để trình chấm truy cập. Tôi kiểm tra yêu cầu CP5, vào Railway >
+> Settings > Networking và dùng **Generate Domain**. Sau khi service và Redis
+> Online, URL `https://k4-l3a-day12-lephanvietcuong-2a202602641-cloudse-production.up.railway.app/health`
+> trả HTTP 200; URL này đã được ghi vào `DEPLOYMENT.md` mà không ghi API key.
